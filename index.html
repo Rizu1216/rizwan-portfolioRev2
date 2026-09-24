@@ -1,108 +1,631 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Rizwan Ansari - Professional Portfolio">
-  <title>Rizwan Ansari | Portfolio</title>
-  <link rel="stylesheet" href="style.css">
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Rizwan Ansari | Portfolio</title>
+
+<style>
+
+/* =========================
+   BASIC PAGE
+========================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #08090b;
+    color: white;
+    min-height: 100vh;
+}
+
+
+/* =========================
+   HERO
+========================= */
+
+.hero {
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+
+    padding: 30px 20px;
+
+    text-align: center;
+
+    background:
+        radial-gradient(
+            circle at center,
+            #22252b 0%,
+            #08090b 65%
+        );
+}
+
+
+/* =========================
+   TITLE
+========================= */
+
+.small-title {
+    color: #aaa;
+
+    font-size: 13px;
+
+    letter-spacing: 4px;
+
+    margin-bottom: 15px;
+}
+
+h1 {
+    font-size: clamp(45px, 9vw, 80px);
+
+    line-height: 1;
+
+    margin-bottom: 15px;
+}
+
+h1 span {
+    color: #aaa;
+}
+
+.description {
+    color: #aaa;
+
+    max-width: 600px;
+
+    line-height: 1.6;
+
+    margin-bottom: 35px;
+}
+
+
+/* =========================
+   360 VIEWER
+========================= */
+
+.viewer {
+    width: min(90vw, 550px);
+
+    background: #15171b;
+
+    border: 1px solid #333;
+
+    border-radius: 25px;
+
+    padding: 15px;
+
+    box-shadow:
+        0 25px 80px rgba(0,0,0,0.6);
+}
+
+
+/* =========================
+   TOP BAR
+========================= */
+
+.viewer-top {
+    display: flex;
+
+    justify-content: space-between;
+
+    padding: 5px 10px 15px;
+
+    font-size: 12px;
+
+    color: #aaa;
+
+    letter-spacing: 2px;
+}
+
+
+/* =========================
+   IMAGE AREA
+========================= */
+
+.image-area {
+    position: relative;
+
+    width: 100%;
+
+    aspect-ratio: 1 / 1;
+
+    overflow: hidden;
+
+    border-radius: 18px;
+
+    background: white;
+
+    cursor: grab;
+
+    touch-action: none;
+
+    user-select: none;
+}
+
+.image-area:active {
+    cursor: grabbing;
+}
+
+
+/* =========================
+   IMAGE
+========================= */
+
+#photo {
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: cover;
+
+    display: block;
+
+    pointer-events: none;
+
+    user-select: none;
+}
+
+
+/* =========================
+   DRAG MESSAGE
+========================= */
+
+.drag-message {
+    position: absolute;
+
+    bottom: 20px;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    background: rgba(0,0,0,0.7);
+
+    padding: 9px 16px;
+
+    border-radius: 30px;
+
+    font-size: 13px;
+
+    white-space: nowrap;
+
+    pointer-events: none;
+}
+
+
+/* =========================
+   BUTTONS
+========================= */
+
+.buttons {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    margin-top: 15px;
+}
+
+button {
+    border: 1px solid #444;
+
+    background: #22252b;
+
+    color: white;
+
+    padding: 10px 18px;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    font-weight: bold;
+}
+
+button:hover {
+    background: #333;
+}
+
+
+/* =========================
+   INFO
+========================= */
+
+.info {
+    margin-top: 20px;
+
+    color: #777;
+
+    font-size: 13px;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 600px) {
+
+    .viewer {
+        width: 95vw;
+    }
+
+    h1 {
+        font-size: 48px;
+    }
+
+}
+
+</style>
+
 </head>
+
+
 <body>
 
-  <header class="navbar">
-    <a class="logo" href="#">Rizwan<span>.</span></a>
-    <nav>
-      <a href="#about">About</a>
-      <a href="#skills">Skills</a>
-      <a href="#experience">Experience</a>
-      <a href="#cv">CV</a>
-      <a href="#contact">Contact</a>
-    </nav>
-  </header>
 
-  <main>
-    <section class="hero" id="about">
-      <div class="hero-text">
-        <p class="eyebrow">WELCOME TO MY PORTFOLIO</p>
-        <h1>Rizwan<br><span>Ansari</span></h1>
-        <p class="hero-description">
-          Quality Control professional focused on inspection, manufacturing quality,
-          problem solving and continuous improvement.
-        </p>
-        <div class="hero-buttons">
-          <a class="btn primary" href="#contact">Contact Me</a>
-          <a class="btn secondary" href="#cv">View CV</a>
-        </div>
-      </div>
+<section class="hero">
 
-      <div class="viewer-card">
+
+    <div class="small-title">
+        WELCOME TO MY PORTFOLIO
+    </div>
+
+
+    <h1>
+        Rizwan
+        <span>Ansari</span>
+    </h1>
+
+
+    <p class="description">
+        Quality Control Professional | Engineering |
+        Manufacturing | Inspection
+    </p>
+
+
+    <!-- =========================
+         360 VIEWER
+    ========================== -->
+
+    <div class="viewer">
+
+
         <div class="viewer-top">
-          <span>360° PROFILE</span>
-          <span id="angleText">0°</span>
+
+            <span>
+                360° PROFILE
+            </span>
+
+            <span id="angle">
+                0°
+            </span>
+
         </div>
 
-        <div class="viewer-wrap">
-          <img id="viewer"
-               src="assets/360/01.jpg"
-               alt="Rizwan Ansari 360 degree profile"
-               draggable="false">
-          <div class="drag-hint" id="dragHint">↔ Drag / Swipe to rotate</div>
+
+        <div
+            class="image-area"
+            id="imageArea"
+        >
+
+            <img
+                id="photo"
+                src="01.jpg"
+                alt="Rizwan Ansari"
+                draggable="false"
+            >
+
+
+            <div
+                class="drag-message"
+                id="message"
+            >
+                ↔ Drag / Swipe to Rotate
+            </div>
+
         </div>
 
-        <div class="viewer-controls">
-          <button id="rotateLeft" aria-label="Rotate left">↶</button>
-          <button id="autoRotate" aria-label="Start automatic rotation">AUTO</button>
-          <button id="rotateRight" aria-label="Rotate right">↷</button>
+
+        <div class="buttons">
+
+            <button onclick="previous()">
+                ↶
+            </button>
+
+            <button onclick="toggleAuto()"
+                    id="autoButton">
+                AUTO
+            </button>
+
+            <button onclick="next()">
+                ↷
+            </button>
+
         </div>
-      </div>
-    </section>
 
-    <section class="section" id="skills">
-      <p class="eyebrow">WHAT I DO</p>
-      <h2>Professional Skills</h2>
-      <div class="cards">
-        <article><h3>Quality Control</h3><p>Inspection, measurement, documentation and quality verification.</p></article>
-        <article><h3>Manufacturing</h3><p>Shop-floor quality support, defect identification and process follow-up.</p></article>
-        <article><h3>Problem Solving</h3><p>Root-cause analysis, corrective actions and continuous improvement.</p></article>
-      </div>
-    </section>
 
-    <section class="section" id="experience">
-      <p class="eyebrow">EXPERIENCE</p>
-      <h2>My Professional Journey</h2>
-      <div class="timeline">
-        <div class="timeline-item">
-          <span class="dot"></span>
-          <h3>Quality Control</h3>
-          <p>Inspection and verification of manufactured components and finished products.</p>
+        <div class="info">
+            Drag left or right to rotate
         </div>
-        <div class="timeline-item">
-          <span class="dot"></span>
-          <h3>QC Documentation</h3>
-          <p>Inspection reports, NCR follow-up, defect analysis and quality communication.</p>
-        </div>
-      </div>
-    </section>
 
-    <section class="section cv-section" id="cv">
-      <p class="eyebrow">MY CV</p>
-      <h2>Curriculum Vitae</h2>
-      <p>Add your CV PDF here and change the filename in the button below.</p>
-      <a class="btn primary" href="assets/Rizwan-CV.pdf" target="_blank">Open CV</a>
-    </section>
 
-    <section class="section contact" id="contact">
-      <p class="eyebrow">GET IN TOUCH</p>
-      <h2>Let's Connect</h2>
-      <p>Interested in working together or discussing a professional opportunity?</p>
-      <a class="btn primary" href="mailto:your-email@example.com">Email Me</a>
-    </section>
-  </main>
+    </div>
 
-  <footer>
-    <p>© <span id="year"></span> Rizwan Ansari. All rights reserved.</p>
-  </footer>
 
-  <script src="script.js"></script>
+</section>
+
+
+<script>
+
+/* =====================================
+   360 IMAGE SETTINGS
+===================================== */
+
+const totalImages = 24;
+
+let current = 1;
+
+let isDragging = false;
+
+let startX = 0;
+
+let lastX = 0;
+
+let auto = false;
+
+let autoTimer;
+
+
+/* =====================================
+   HTML ELEMENTS
+===================================== */
+
+const photo =
+    document.getElementById("photo");
+
+const imageArea =
+    document.getElementById("imageArea");
+
+const angle =
+    document.getElementById("angle");
+
+const message =
+    document.getElementById("message");
+
+const autoButton =
+    document.getElementById("autoButton");
+
+
+/* =====================================
+   PRELOAD ALL 24 IMAGES
+===================================== */
+
+const images = [];
+
+for (let i = 1; i <= totalImages; i++) {
+
+    const img = new Image();
+
+    img.src =
+        String(i).padStart(2, "0") + ".jpg";
+
+    images.push(img);
+
+}
+
+
+/* =====================================
+   SHOW IMAGE
+===================================== */
+
+function showImage() {
+
+    photo.src =
+        String(current).padStart(2, "0") + ".jpg";
+
+
+    const degrees =
+        (current - 1) * 15;
+
+    angle.innerText =
+        degrees + "°";
+
+}
+
+
+/* =====================================
+   NEXT
+===================================== */
+
+function next() {
+
+    current++;
+
+    if (current > totalImages) {
+        current = 1;
+    }
+
+    showImage();
+
+}
+
+
+/* =====================================
+   PREVIOUS
+===================================== */
+
+function previous() {
+
+    current--;
+
+    if (current < 1) {
+        current = totalImages;
+    }
+
+    showImage();
+
+}
+
+
+/* =====================================
+   MOUSE / TOUCH START
+===================================== */
+
+imageArea.addEventListener(
+    "pointerdown",
+    function(event) {
+
+        isDragging = true;
+
+        startX = event.clientX;
+
+        lastX = event.clientX;
+
+        message.style.display = "none";
+
+        imageArea.setPointerCapture(
+            event.pointerId
+        );
+
+        stopAuto();
+
+    }
+);
+
+
+/* =====================================
+   MOUSE / TOUCH MOVE
+===================================== */
+
+imageArea.addEventListener(
+    "pointermove",
+    function(event) {
+
+        if (!isDragging) {
+            return;
+        }
+
+
+        const movement =
+            event.clientX - lastX;
+
+
+        if (Math.abs(movement) >= 15) {
+
+            if (movement > 0) {
+
+                previous();
+
+            } else {
+
+                next();
+
+            }
+
+            lastX = event.clientX;
+
+        }
+
+    }
+);
+
+
+/* =====================================
+   MOUSE / TOUCH END
+===================================== */
+
+imageArea.addEventListener(
+    "pointerup",
+    function() {
+
+        isDragging = false;
+
+    }
+);
+
+
+imageArea.addEventListener(
+    "pointercancel",
+    function() {
+
+        isDragging = false;
+
+    }
+);
+
+
+/* =====================================
+   AUTO ROTATION
+===================================== */
+
+function toggleAuto() {
+
+    if (auto) {
+
+        stopAuto();
+
+    } else {
+
+        startAuto();
+
+    }
+
+}
+
+
+function startAuto() {
+
+    auto = true;
+
+    autoButton.innerText = "STOP";
+
+
+    autoTimer = setInterval(
+        function() {
+
+            next();
+
+        },
+        150
+    );
+
+}
+
+
+function stopAuto() {
+
+    auto = false;
+
+    autoButton.innerText = "AUTO";
+
+    clearInterval(autoTimer);
+
+}
+
+
+/* =====================================
+   START
+===================================== */
+
+showImage();
+
+</script>
+
+
 </body>
 </html>
