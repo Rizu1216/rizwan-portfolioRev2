@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Rizwan Ansari - Professional Portfolio">
+  <title>Rizwan Ansari | Portfolio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="navbar">
+    <a class="logo" href="#">Rizwan<span>.</span></a>
+    <nav>
+      <a href="#about">About</a>
+      <a href="#skills">Skills</a>
+      <a href="#experience">Experience</a>
+      <a href="#cv">CV</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="about">
+      <div class="hero-text">
+        <p class="eyebrow">WELCOME TO MY PORTFOLIO</p>
+        <h1>Rizwan<br><span>Ansari</span></h1>
+        <p class="hero-description">
+          Quality Control professional focused on inspection, manufacturing quality,
+          problem solving and continuous improvement.
+        </p>
+        <div class="hero-buttons">
+          <a class="btn primary" href="#contact">Contact Me</a>
+          <a class="btn secondary" href="#cv">View CV</a>
+        </div>
+      </div>
+
+      <div class="viewer-card">
+        <div class="viewer-top">
+          <span>360° PROFILE</span>
+          <span id="angleText">0°</span>
+        </div>
+
+        <div class="viewer-wrap">
+          <img id="viewer"
+               src="assets/360/01.jpg"
+               alt="Rizwan Ansari 360 degree profile"
+               draggable="false">
+          <div class="drag-hint" id="dragHint">↔ Drag / Swipe to rotate</div>
+        </div>
+
+        <div class="viewer-controls">
+          <button id="rotateLeft" aria-label="Rotate left">↶</button>
+          <button id="autoRotate" aria-label="Start automatic rotation">AUTO</button>
+          <button id="rotateRight" aria-label="Rotate right">↷</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="skills">
+      <p class="eyebrow">WHAT I DO</p>
+      <h2>Professional Skills</h2>
+      <div class="cards">
+        <article><h3>Quality Control</h3><p>Inspection, measurement, documentation and quality verification.</p></article>
+        <article><h3>Manufacturing</h3><p>Shop-floor quality support, defect identification and process follow-up.</p></article>
+        <article><h3>Problem Solving</h3><p>Root-cause analysis, corrective actions and continuous improvement.</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="experience">
+      <p class="eyebrow">EXPERIENCE</p>
+      <h2>My Professional Journey</h2>
+      <div class="timeline">
+        <div class="timeline-item">
+          <span class="dot"></span>
+          <h3>Quality Control</h3>
+          <p>Inspection and verification of manufactured components and finished products.</p>
+        </div>
+        <div class="timeline-item">
+          <span class="dot"></span>
+          <h3>QC Documentation</h3>
+          <p>Inspection reports, NCR follow-up, defect analysis and quality communication.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section cv-section" id="cv">
+      <p class="eyebrow">MY CV</p>
+      <h2>Curriculum Vitae</h2>
+      <p>Add your CV PDF here and change the filename in the button below.</p>
+      <a class="btn primary" href="assets/Rizwan-CV.pdf" target="_blank">Open CV</a>
+    </section>
+
+    <section class="section contact" id="contact">
+      <p class="eyebrow">GET IN TOUCH</p>
+      <h2>Let's Connect</h2>
+      <p>Interested in working together or discussing a professional opportunity?</p>
+      <a class="btn primary" href="mailto:your-email@example.com">Email Me</a>
+    </section>
+  </main>
+
+  <footer>
+    <p>© <span id="year"></span> Rizwan Ansari. All rights reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
