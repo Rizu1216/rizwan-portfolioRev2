@@ -2964,6 +2964,133 @@ footer{
   .v2-kpi{min-height:185px}
   .v2-profile-meta{line-height:1.5}
 }
+
+/* =========================================================
+   PREMIUM 360 PROFILE UPGRADE
+========================================================= */
+.profile-360-card{
+    position:relative;
+    padding:14px !important;
+    border:1px solid rgba(255,255,255,.12) !important;
+    background:
+        linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.018)) !important;
+    box-shadow:
+        0 35px 90px rgba(0,0,0,.48),
+        0 0 55px rgba(24,200,255,.08),
+        inset 0 1px 0 rgba(255,255,255,.08) !important;
+    backdrop-filter:blur(18px);
+}
+.profile-360-card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:inherit;
+    pointer-events:none;
+    background:linear-gradient(120deg,rgba(255,255,255,.10),transparent 28%,transparent 72%,rgba(24,200,255,.06));
+    opacity:.65;
+}
+.portfolio-360{
+    position:relative;
+    z-index:1;
+    gap:11px !important;
+}
+.portfolio-360-top{
+    padding:3px 7px 4px !important;
+    color:#d5e8ef !important;
+    font-size:9px !important;
+    letter-spacing:2px !important;
+}
+.portfolio-360-top span:last-child{
+    color:#66ddff;
+    font-variant-numeric:tabular-nums;
+}
+.portfolio-360-stage{
+    position:relative;
+    aspect-ratio:1/1 !important;
+    border-radius:20px !important;
+    background:
+        radial-gradient(circle at 50% 34%,#ffffff 0%,#edf0f2 48%,#cfd4d8 100%) !important;
+    border:1px solid rgba(255,255,255,.7);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.8),
+        inset 0 -25px 55px rgba(0,0,0,.08),
+        0 18px 45px rgba(0,0,0,.22);
+    isolation:isolate;
+}
+.portfolio-360-stage::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:2;
+    pointer-events:none;
+    background:
+        radial-gradient(circle at 50% 32%,rgba(255,255,255,.34),transparent 38%),
+        linear-gradient(115deg,rgba(255,255,255,.22),transparent 34%,transparent 70%,rgba(0,0,0,.06));
+    mix-blend-mode:screen;
+}
+.portfolio-360-stage::after{
+    content:"";
+    position:absolute;
+    left:16%;
+    right:16%;
+    bottom:5%;
+    height:12%;
+    z-index:0;
+    border-radius:50%;
+    background:rgba(0,0,0,.16);
+    filter:blur(18px);
+    transform:translateY(20%);
+}
+#portfolio360Image{
+    position:relative;
+    z-index:1;
+    width:100% !important;
+    height:100% !important;
+    object-fit:cover !important;
+    object-position:center center;
+    image-rendering:auto;
+    transform:scale(1.012);
+    filter:saturate(.92) contrast(1.045) brightness(1.015);
+    transition:opacity .09s ease, filter .35s ease, transform .35s ease;
+    will-change:opacity,transform;
+}
+.portfolio-360-stage.dragging #portfolio360Image{
+    transition:none;
+}
+.portfolio-360-stage:hover #portfolio360Image{
+    transform:scale(1.022);
+}
+.portfolio-360-hint{
+    z-index:4;
+    bottom:16px !important;
+    padding:8px 13px !important;
+    font-size:8px !important;
+    letter-spacing:.5px;
+    border:1px solid rgba(255,255,255,.22) !important;
+    background:rgba(5,10,16,.68) !important;
+    box-shadow:0 8px 24px rgba(0,0,0,.22);
+}
+.portfolio-360-controls{
+    gap:8px !important;
+}
+.portfolio-360-controls button{
+    height:36px !important;
+    border-radius:11px !important;
+    background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035)) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+}
+.portfolio-360-controls button:active{
+    transform:scale(.94) !important;
+}
+.portfolio-360-controls #portfolioAuto{
+    letter-spacing:1px;
+}
+.profile-badge{
+    bottom:25px !important;
+    z-index:5;
+    box-shadow:0 12px 35px rgba(0,0,0,.28);
+}
+
 </style> </head> <body> <!-- =====================================================  
      BACKGROUND  
 ===================================================== --> <div class="orb one"></div>
@@ -4700,31 +4827,199 @@ if(
   
   
 /* =========================================================
-   360° PROFILE VIEWER
+   PREMIUM 360° PROFILE VIEWER
 ========================================================= */
 (function(){
-    const totalFrames=24;
-    let frame=1, dragging=false, lastX=0, autoTimer=null;
-    const image=document.getElementById("portfolio360Image");
-    const stage=document.getElementById("portfolio360Stage");
-    const angle=document.getElementById("portfolioAngle");
-    const hint=document.getElementById("portfolio360Hint");
-    const left=document.getElementById("portfolioRotateLeft");
-    const right=document.getElementById("portfolioRotateRight");
-    const auto=document.getElementById("portfolioAuto");
-    if(!image||!stage)return;
-    for(let i=1;i<=totalFrames;i++){const im=new Image();im.src=String(i).padStart(2,"0")+".jpg";}
-    function show(){image.src=String(frame).padStart(2,"0")+".jpg";angle.textContent=((frame-1)*15)+"°";}
-    function next(){frame=frame>=totalFrames?1:frame+1;show();}
-    function prev(){frame=frame<=1?totalFrames:frame-1;show();}
-    function stop(){clearInterval(autoTimer);autoTimer=null;auto.textContent="AUTO";}
-    function start(){stop();auto.textContent="STOP";autoTimer=setInterval(next,150);}
-    left.addEventListener("click",prev);right.addEventListener("click",next);auto.addEventListener("click",()=>autoTimer?stop():start());
-    stage.addEventListener("pointerdown",e=>{dragging=true;lastX=e.clientX;hint.style.opacity="0";stop();stage.setPointerCapture(e.pointerId);});
-    stage.addEventListener("pointermove",e=>{if(!dragging)return;const dx=e.clientX-lastX;if(Math.abs(dx)>=12){dx>0?prev():next();lastX=e.clientX;}});
-    stage.addEventListener("pointerup",()=>dragging=false);stage.addEventListener("pointercancel",()=>dragging=false);
-    show();
+    const totalFrames = 24;
+    const step = 360 / totalFrames;
+
+    let frame = 1;
+    let dragging = false;
+    let lastX = 0;
+    let carry = 0;
+    let velocity = 0;
+    let momentum = null;
+    let autoTimer = null;
+    let fadeTimer = null;
+
+    const image = document.getElementById("portfolio360Image");
+    const stage = document.getElementById("portfolio360Stage");
+    const angle = document.getElementById("portfolioAngle");
+    const hint = document.getElementById("portfolio360Hint");
+    const left = document.getElementById("portfolioRotateLeft");
+    const right = document.getElementById("portfolioRotateRight");
+    const auto = document.getElementById("portfolioAuto");
+
+    if(!image || !stage) return;
+
+    const frames = [];
+
+    for(let i = 1; i <= totalFrames; i++){
+        const im = new Image();
+        im.decoding = "async";
+        im.src = String(i).padStart(2,"0") + ".jpg";
+        frames.push(im);
+    }
+
+    function setFrame(nextFrame, animate = true){
+        frame = ((nextFrame - 1 + totalFrames) % totalFrames) + 1;
+
+        if(animate){
+            image.style.opacity = "0.88";
+            clearTimeout(fadeTimer);
+            fadeTimer = setTimeout(() => {
+                image.src = frames[frame - 1].src;
+                image.style.opacity = "1";
+            }, 35);
+        }else{
+            image.src = frames[frame - 1].src;
+            image.style.opacity = "1";
+        }
+
+        angle.textContent = Math.round((frame - 1) * step) + "°";
+    }
+
+    function next(){
+        setFrame(frame + 1);
+    }
+
+    function prev(){
+        setFrame(frame - 1);
+    }
+
+    function stopAuto(){
+        clearInterval(autoTimer);
+        autoTimer = null;
+        auto.textContent = "AUTO";
+    }
+
+    function startAuto(){
+        stopAuto();
+        auto.textContent = "STOP";
+        autoTimer = setInterval(() => next(), 105);
+    }
+
+    function stopMomentum(){
+        cancelAnimationFrame(momentum);
+        momentum = null;
+        velocity = 0;
+    }
+
+    function beginDrag(e){
+        dragging = true;
+        lastX = e.clientX;
+        carry = 0;
+        velocity = 0;
+        stopAuto();
+        stopMomentum();
+        stage.classList.add("dragging");
+        hint.style.opacity = "0";
+        try{ stage.setPointerCapture(e.pointerId); }catch(_){}
+    }
+
+    function moveDrag(e){
+        if(!dragging) return;
+
+        const dx = e.clientX - lastX;
+        lastX = e.clientX;
+
+        velocity = dx;
+        carry += dx;
+
+        // Higher sensitivity = smoother feeling on both desktop and mobile.
+        while(Math.abs(carry) >= 9){
+            if(carry > 0){
+                prev();
+                carry -= 9;
+            }else{
+                next();
+                carry += 9;
+            }
+        }
+    }
+
+    function endDrag(e){
+        if(!dragging) return;
+
+        dragging = false;
+        stage.classList.remove("dragging");
+        try{ stage.releasePointerCapture(e.pointerId); }catch(_){}
+
+        // Small natural momentum after a fast swipe.
+        let v = velocity * 0.55;
+        if(Math.abs(v) < 1.5) return;
+
+        function coast(){
+            v *= 0.90;
+            if(Math.abs(v) < 0.7){
+                momentum = null;
+                return;
+            }
+
+            if(Math.abs(v) >= 7){
+                if(v > 0) prev();
+                else next();
+                v *= 0.72;
+            }
+
+            momentum = requestAnimationFrame(coast);
+        }
+
+        momentum = requestAnimationFrame(coast);
+    }
+
+    stage.addEventListener("pointerdown", beginDrag);
+    stage.addEventListener("pointermove", moveDrag);
+    stage.addEventListener("pointerup", endDrag);
+    stage.addEventListener("pointercancel", endDrag);
+
+    left.addEventListener("click", () => {
+        stopAuto();
+        stopMomentum();
+        prev();
+    });
+
+    right.addEventListener("click", () => {
+        stopAuto();
+        stopMomentum();
+        next();
+    });
+
+    auto.addEventListener("click", () => {
+        autoTimer ? stopAuto() : startAuto();
+    });
+
+    // Mouse wheel support: subtle, one frame per wheel movement.
+    stage.addEventListener("wheel", e => {
+        e.preventDefault();
+        stopAuto();
+        stopMomentum();
+        if(Math.abs(e.deltaY) + Math.abs(e.deltaX) < 1) return;
+        e.deltaY + e.deltaX > 0 ? next() : prev();
+    }, {passive:false});
+
+    // Keyboard accessibility.
+    stage.setAttribute("tabindex","0");
+    stage.addEventListener("keydown", e => {
+        if(e.key === "ArrowLeft"){ e.preventDefault(); prev(); }
+        if(e.key === "ArrowRight"){ e.preventDefault(); next(); }
+        if(e.key === " "){ e.preventDefault(); autoTimer ? stopAuto() : startAuto(); }
+    });
+
+    setFrame(1, false);
+
+    // Start only after the first image is ready.
+    if(frames[0].complete){
+        image.style.opacity = "1";
+    }else{
+        image.style.opacity = "0";
+        frames[0].addEventListener("load", () => {
+            image.src = frames[0].src;
+            image.style.opacity = "1";
+        }, {once:true});
+    }
 })();
+
 
 </script> </body>
 </html>
