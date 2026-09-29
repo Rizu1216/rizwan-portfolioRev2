@@ -206,17 +206,61 @@ body:before{
 #viewerVideo{
   width:100%;
   height:100%;
+  display:block;
   object-fit:contain;
   position:relative;
   z-index:3;
   pointer-events:none;
+  background:#050505;
   filter:saturate(.94) contrast(1.04);
   transform:scale(1.02);
   -webkit-mask-image:linear-gradient(to bottom,black 83%,transparent 100%);
   mask-image:linear-gradient(to bottom,black 83%,transparent 100%);
-  background:#050505;
 }
 .viewer.dragging #viewerVideo{transform:scale(1.035)}
+
+.video-poster{
+  position:absolute;
+  inset:0;
+  z-index:2;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  pointer-events:none;
+  opacity:1;
+  transition:opacity .25s ease;
+  filter:saturate(.94) contrast(1.04);
+}
+.viewer.video-ready .video-poster{opacity:0}
+
+.video-loading{
+  position:absolute;
+  left:50%;
+  top:50%;
+  z-index:7;
+  transform:translate(-50%,-50%);
+  padding:10px 15px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:999px;
+  background:rgba(5,5,5,.72);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  color:#d7d7dc;
+  font-size:10px;
+  letter-spacing:2px;
+  white-space:nowrap;
+  text-transform:uppercase;
+  transition:opacity .2s ease;
+}
+.viewer.video-ready .video-loading{opacity:0;pointer-events:none}
+.video-loading.error{
+  opacity:1;
+  color:#fff;
+  max-width:80%;
+  text-align:center;
+  line-height:1.6;
+  white-space:normal;
+}
 
 .viewer-label{
   position:absolute;
@@ -645,13 +689,25 @@ footer{
       </p>
     </div>
 
-    <div class="viewer" id="viewer" tabindex="0" aria-label="Interactive 360 degree portrait viewer">
+    <div class="viewer" id="viewer" tabindex="0" aria-label="Interactive 360 degree profile video viewer">
       <div class="viewer-ring"></div>
 
-      <video id="viewerVideo" preload="auto" playsinline muted loop
+      <!-- Fallback image: visible immediately while the MP4 loads -->
+      <img class="video-poster" src="01.jpg"
+           alt="Rizwan Ansari profile portrait">
+
+      <video id="viewerVideo"
+             preload="auto"
+             playsinline
+             webkit-playsinline
+             muted
+             loop
+             poster="01.jpg"
              aria-label="Rizwan Ansari interactive 360 degree profile video">
-  <source src="1000220286.mp4" type="video/mp4">
-</video>
+        <source src="1000220286.mp4" type="video/mp4">
+      </video>
+
+      <div class="video-loading" id="videoLoading">LOADING 360° VIDEO</div>
 
       <div class="drag-overlay" id="dragOverlay" aria-hidden="true"></div>
 
@@ -666,7 +722,7 @@ footer{
         <button class="control" id="next" aria-label="Rotate right">→</button>
       </div>
 
-      <div class="frame-status" id="frameStatus">360° VIDEO</div>
+      <div class="frame-status" id="frameStatus">360° VIDEO • 00:00</div>
     </div>
 
     <div class="hero-right">
@@ -856,10 +912,15 @@ footer{
 
 <script>
 /* ==========================================================
-   360° VIDEO TURN-TABLE VIEWER
-   Put 1000220286.mp4 in the SAME folder as index.html.
-   The video is scrubbed by dragging/swiping instead of using
-   separate JPG frames.
+   VIDEO 360° / TURN-TABLE VIEWER
+   Required file in the SAME folder as index.html:
+   1000220286.mp4
+
+   This is an interactive turn-table video:
+   - Drag / swipe horizontally to scrub through the video
+   - Mouse wheel scrubs the video
+   - Arrow buttons move through the video
+   - Auto button toggles playback
    ========================================================== */
 
 const video = document.getElementById("viewerVideo");
@@ -867,95 +928,166 @@ const viewer = document.getElementById("viewer");
 const overlay = document.getElementById("dragOverlay");
 const status = document.getElementById("frameStatus");
 const autoButton = document.getElementById("auto");
+const videoLoading = document.getElementById("videoLoading");
 
 let autoRotate = true;
 let dragging = false;
 let startX = 0;
+let startTime = 0;
 let lastX = 0;
-let lastTime = 0;
+let lastMoveTime = 0;
 let velocity = 0;
 let momentum = null;
-let duration = 0;
+let ready = false;
+
+function formatTime(seconds){
+  if(!Number.isFinite(seconds)) return "00:00";
+  const s = Math.max(0, Math.floor(seconds));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return String(m).padStart(2,"0") + ":" + String(r).padStart(2,"0");
+}
+
+function updateStatus(){
+  const duration = video.duration;
+  status.textContent = Number.isFinite(duration)
+    ? "360° VIDEO • " + formatTime(video.currentTime) + " / " + formatTime(duration)
+    : "360° VIDEO";
+}
+
+function setVideoTime(time){
+  if(!ready || !Number.isFinite(video.duration) || video.duration <= 0) return;
+
+  let t = time % video.duration;
+  if(t < 0) t += video.duration;
+
+  video.currentTime = t;
+  updateStatus();
+}
+
+function setReady(){
+  if(ready) return;
+  ready = true;
+  viewer.classList.add("video-ready");
+  videoLoading.textContent = "LOADING 360° VIDEO";
+  videoLoading.classList.remove("error");
+  updateStatus();
+
+  // Try muted autoplay. Browsers normally allow this.
+  if(autoRotate){
+    const promise = video.play();
+    if(promise && typeof promise.catch === "function"){
+      promise.catch(() => {
+        // If autoplay is blocked, the poster remains visible and
+        // the user can press the center control to start playback.
+        autoRotate = false;
+        autoButton.classList.remove("on");
+        autoButton.textContent = "▶";
+      });
+    }
+  }
+}
 
 video.addEventListener("loadedmetadata", () => {
-  duration = video.duration || 0;
-  status.textContent = "360° VIDEO";
-  video.currentTime = 0;
-  video.play().catch(()=>{});
+  updateStatus();
 });
 
-video.addEventListener("timeupdate", () => {
-  status.textContent = duration
-    ? `360° VIDEO • ${Math.round((video.currentTime / duration) * 360)}°`
-    : "360° VIDEO";
+video.addEventListener("loadeddata", setReady);
+video.addEventListener("canplay", setReady);
+video.addEventListener("timeupdate", updateStatus);
+
+video.addEventListener("error", () => {
+  ready = false;
+  viewer.classList.remove("video-ready");
+  videoLoading.textContent =
+    "VIDEO FAILED TO LOAD • CHECK 1000220286.MP4";
+  videoLoading.classList.add("error");
+  status.textContent = "VIDEO ERROR";
+  console.error("Could not load 1000220286.mp4", video.error);
 });
 
-function scrubBy(amount){
-  if(!duration) return;
-  video.currentTime = (video.currentTime + amount + duration) % duration;
+// If the browser has already loaded the video before the listeners run.
+if(video.readyState >= 2){
+  setReady();
+}
+
+function stopAuto(){
+  autoRotate = false;
+  video.pause();
+  autoButton.classList.remove("on");
+  autoButton.textContent = "▶";
 }
 
 function startAuto(){
   autoRotate = true;
   autoButton.classList.add("on");
   autoButton.textContent = "Ⅱ";
-  video.play().catch(()=>{});
-}
 
-function stopAuto(){
-  autoRotate = false;
-  autoButton.classList.remove("on");
-  autoButton.textContent = "▶";
-  video.pause();
+  if(ready){
+    const promise = video.play();
+    if(promise && typeof promise.catch === "function"){
+      promise.catch(() => {
+        autoRotate = false;
+        autoButton.classList.remove("on");
+        autoButton.textContent = "▶";
+      });
+    }
+  }
 }
 
 function toggleAuto(){
-  autoRotate ? stopAuto() : startAuto();
+  if(autoRotate) stopAuto();
+  else startAuto();
 }
 
 autoButton.addEventListener("click", toggleAuto);
 
-document.getElementById("prev").addEventListener("click",()=>{
+// Buttons: move approximately 1/24 of a full rotation.
+function stepRotation(direction){
   stopAuto();
-  scrubBy(-(1/24));
-});
+  if(!ready || !Number.isFinite(video.duration)) return;
+  setVideoTime(video.currentTime + direction * (video.duration / 24));
+}
 
-document.getElementById("next").addEventListener("click",()=>{
-  stopAuto();
-  scrubBy(1/24);
-});
+document.getElementById("prev").addEventListener("click", () => stepRotation(-1));
+document.getElementById("next").addEventListener("click", () => stepRotation(1));
 
 function beginDrag(e){
+  if(!ready) return;
+
   dragging = true;
   viewer.classList.add("dragging");
+  stopAuto();
+
   startX = e.clientX;
   lastX = e.clientX;
-  lastTime = performance.now();
+  startTime = video.currentTime;
+  lastMoveTime = performance.now();
   velocity = 0;
-  stopAuto();
+
   cancelAnimationFrame(momentum);
-  overlay.setPointerCapture?.(e.pointerId);
+
+  try{
+    overlay.setPointerCapture(e.pointerId);
+  }catch(err){}
 }
 
 function moveDrag(e){
-  if(!dragging || !duration) return;
+  if(!dragging || !ready || !Number.isFinite(video.duration)) return;
 
   const now = performance.now();
   const dx = e.clientX - lastX;
-  const dt = Math.max(1, now - lastTime);
+  const dt = Math.max(1, now - lastMoveTime);
 
   velocity = dx / dt;
   lastX = e.clientX;
-  lastTime = now;
+  lastMoveTime = now;
 
-  /*
-    Horizontal dragging controls the video timeline.
-    A full screen-width drag is approximately one complete
-    revolution through the video.
-  */
-  if(Math.abs(dx) >= 1){
-    const secondsPerPixel = duration / Math.max(350, window.innerWidth);
-    scrubBy(-dx * secondsPerPixel);
+  // One full viewport-width drag = one complete video rotation.
+  const sensitivity = video.duration / Math.max(220, window.innerWidth);
+
+  if(Math.abs(e.clientX - startX) > 2){
+    setVideoTime(startTime - (e.clientX - startX) * sensitivity);
   }
 }
 
@@ -965,16 +1097,13 @@ function endDrag(){
   dragging = false;
   viewer.classList.remove("dragging");
 
-  /* Small inertial movement after release. */
-  let v = velocity * 12;
+  // Small inertial continuation for a smoother premium feel.
+  let v = -velocity * (video.duration / Math.max(220, window.innerWidth)) * 16;
+
   function coast(){
-    if(Math.abs(v) < 0.05) return;
+    if(Math.abs(v) < 0.001 || !ready) return;
 
-    if(duration){
-      const secondsPerPixel = duration / Math.max(350, window.innerWidth);
-      scrubBy(-v * secondsPerPixel);
-    }
-
+    setVideoTime(video.currentTime + v);
     v *= 0.86;
     momentum = requestAnimationFrame(coast);
   }
@@ -986,37 +1115,47 @@ overlay.addEventListener("pointerdown", beginDrag);
 overlay.addEventListener("pointermove", moveDrag);
 overlay.addEventListener("pointerup", endDrag);
 overlay.addEventListener("pointercancel", endDrag);
+overlay.addEventListener("lostpointercapture", endDrag);
 
-viewer.addEventListener("wheel",e=>{
+// Mouse wheel / trackpad.
+viewer.addEventListener("wheel", e => {
   e.preventDefault();
+  if(!ready || !Number.isFinite(video.duration)) return;
+
   stopAuto();
 
-  if(!duration) return;
+  const amount = Math.sign(e.deltaY || e.deltaX);
+  const sensitivity = video.duration / 120;
 
-  const amount = duration / 60;
-  scrubBy(e.deltaY > 0 ? amount : -amount);
-},{passive:false});
+  setVideoTime(video.currentTime + amount * sensitivity);
+}, {passive:false});
 
-viewer.addEventListener("keydown",e=>{
-  if(e.key==="ArrowLeft"){
+// Keyboard accessibility.
+viewer.addEventListener("keydown", e => {
+  if(e.key === "ArrowLeft"){
     e.preventDefault();
-    stopAuto();
-    scrubBy(-duration/60);
+    stepRotation(-1);
   }
-  if(e.key==="ArrowRight"){
+
+  if(e.key === "ArrowRight"){
     e.preventDefault();
-    stopAuto();
-    scrubBy(duration/60);
+    stepRotation(1);
   }
-  if(e.key===" "){
+
+  if(e.key === " "){
     e.preventDefault();
     toggleAuto();
   }
 });
 
-document.addEventListener("visibilitychange",()=>{
-  if(document.hidden) video.pause();
-  else if(autoRotate) video.play().catch(()=>{});
+// Try to resume playback after the page becomes visible.
+document.addEventListener("visibilitychange", () => {
+  if(document.hidden){
+    video.pause();
+  }else if(autoRotate && ready){
+    const promise = video.play();
+    if(promise && typeof promise.catch === "function") promise.catch(()=>{});
+  }
 });
 
 /* Navigation */
@@ -1030,7 +1169,10 @@ window.addEventListener("scroll",()=>{
   document.querySelectorAll("section[id]").forEach(section=>{
     if(window.scrollY >= section.offsetTop-180) current=section.id;
   });
-  navLinks.forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+current));
+
+  navLinks.forEach(a=>{
+    a.classList.toggle("active",a.getAttribute("href")==="#"+current);
+  });
 },{passive:true});
 
 /* Reveal animation */
@@ -1045,28 +1187,8 @@ const observer=new IntersectionObserver(entries=>{
 
 document.querySelectorAll(".reveal").forEach(el=>observer.observe(el));
 
-setFrame(1);
-startAuto();
+updateStatus();
 </script>
 
 </body>
 </html>
-oggleAuto();
-  }
-});
-
-document.addEventListener("visibilitychange",()=>{
-  if(document.hidden) video.pause();
-  else if(autoRotate) video.play().catch(()=>{});
-});
-
-/* Navigation */
-const nav=document.getElementById("nav");
-const navLinks=[...document.querySelectorAll(".navlinks a")];
-
-window.addEventListener("scroll",()=>{
-  nav.classList.toggle("scrolled",window.scrollY>20);
-
-  let current="home";
-  document.querySelectorAll("section[id]").forEach(section=>{
-    if(window.scrollY >= section.offsetT
