@@ -203,7 +203,7 @@ body:before{
 .viewer-ring:before{inset:8%;transform:rotate(18deg)}
 .viewer-ring:after{inset:-6%;border-color:rgba(255,255,255,.025)}
 
-#viewerImage{
+#viewerVideo{
   width:100%;
   height:100%;
   object-fit:contain;
@@ -214,8 +214,9 @@ body:before{
   transform:scale(1.02);
   -webkit-mask-image:linear-gradient(to bottom,black 83%,transparent 100%);
   mask-image:linear-gradient(to bottom,black 83%,transparent 100%);
+  background:#050505;
 }
-.viewer.dragging #viewerImage{transform:scale(1.035)}
+.viewer.dragging #viewerVideo{transform:scale(1.035)}
 
 .viewer-label{
   position:absolute;
@@ -647,13 +648,16 @@ footer{
     <div class="viewer" id="viewer" tabindex="0" aria-label="Interactive 360 degree portrait viewer">
       <div class="viewer-ring"></div>
 
-      <img id="viewerImage" src="01.jpg" alt="Rizwan Ansari 360 degree profile portrait">
+      <video id="viewerVideo" preload="auto" playsinline muted loop
+             aria-label="Rizwan Ansari interactive 360 degree profile video">
+  <source src="1000220286.mp4" type="video/mp4">
+</video>
 
       <div class="drag-overlay" id="dragOverlay" aria-hidden="true"></div>
 
       <div class="viewer-label">
         <div class="rotate-icon">360°</div>
-        <p>DRAG / SCROLL TO ROTATE</p>
+        <p>DRAG / SWIPE TO ROTATE</p>
       </div>
 
       <div class="viewer-controls">
@@ -662,7 +666,7 @@ footer{
         <button class="control" id="next" aria-label="Rotate right">→</button>
       </div>
 
-      <div class="frame-status" id="frameStatus">01 / 24</div>
+      <div class="frame-status" id="frameStatus">360° VIDEO</div>
     </div>
 
     <div class="hero-right">
@@ -852,148 +856,167 @@ footer{
 
 <script>
 /* ==========================================================
-   360° VIEWER
-   Put 01.jpg through 24.jpg in the SAME folder as index.html.
+   360° VIDEO TURN-TABLE VIEWER
+   Put 1000220286.mp4 in the SAME folder as index.html.
+   The video is scrubbed by dragging/swiping instead of using
+   separate JPG frames.
    ========================================================== */
 
-const TOTAL_FRAMES = 24;
-const image = document.getElementById("viewerImage");
+const video = document.getElementById("viewerVideo");
 const viewer = document.getElementById("viewer");
 const overlay = document.getElementById("dragOverlay");
 const status = document.getElementById("frameStatus");
-const dots = document.getElementById("dots");
 const autoButton = document.getElementById("auto");
 
-let frame = 1;
 let autoRotate = true;
-let timer = null;
 let dragging = false;
 let startX = 0;
-let startY = 0;
 let lastX = 0;
 let lastTime = 0;
 let velocity = 0;
 let momentum = null;
+let duration = 0;
 
-const frames = [];
-for(let i=1;i<=TOTAL_FRAMES;i++){
-  const img = new Image();
-  img.src = String(i).padStart(2,"0") + ".jpg";
-  frames.push(img);
-}
+video.addEventListener("loadedmetadata", () => {
+  duration = video.duration || 0;
+  status.textContent = "360° VIDEO";
+  video.currentTime = 0;
+  video.play().catch(()=>{});
+});
 
-for(let i=1;i<=5;i++){
-  const dot=document.createElement("button");
-  dot.className="dot" + (i===1 ? " active" : "");
-  dot.type="button";
-  dot.setAttribute("aria-label","Go to 360 view position " + i);
-  dot.addEventListener("click",()=>setFrame(((i-1)*6)+1));
-  dots.appendChild(dot);
-}
+video.addEventListener("timeupdate", () => {
+  status.textContent = duration
+    ? `360° VIDEO • ${Math.round((video.currentTime / duration) * 360)}°`
+    : "360° VIDEO";
+});
 
-function setFrame(n){
-  frame=((n-1)%TOTAL_FRAMES+TOTAL_FRAMES)%TOTAL_FRAMES+1;
-  image.src=String(frame).padStart(2,"0")+".jpg";
-  status.textContent=String(frame).padStart(2,"0")+" / "+TOTAL_FRAMES;
-
-  const dotIndex=Math.floor((frame-1)/5);
-  [...dots.children].forEach((d,i)=>d.classList.toggle("active",i===Math.min(dotIndex,4)));
-}
-
-function step(amount){
-  setFrame(frame+amount);
+function scrubBy(amount){
+  if(!duration) return;
+  video.currentTime = (video.currentTime + amount + duration) % duration;
 }
 
 function startAuto(){
-  clearInterval(timer);
-  if(!autoRotate)return;
-  timer=setInterval(()=>step(1),85);
+  autoRotate = true;
   autoButton.classList.add("on");
-  autoButton.textContent="Ⅱ";
+  autoButton.textContent = "Ⅱ";
+  video.play().catch(()=>{});
 }
 
 function stopAuto(){
-  clearInterval(timer);
+  autoRotate = false;
   autoButton.classList.remove("on");
-  autoButton.textContent="▶";
+  autoButton.textContent = "▶";
+  video.pause();
 }
 
 function toggleAuto(){
-  autoRotate=!autoRotate;
-  autoRotate ? startAuto() : stopAuto();
+  autoRotate ? stopAuto() : startAuto();
 }
 
-autoButton.addEventListener("click",toggleAuto);
-document.getElementById("prev").addEventListener("click",()=>{stopAuto();autoRotate=false;step(-1)});
-document.getElementById("next").addEventListener("click",()=>{stopAuto();autoRotate=false;step(1)});
+autoButton.addEventListener("click", toggleAuto);
+
+document.getElementById("prev").addEventListener("click",()=>{
+  stopAuto();
+  scrubBy(-(1/24));
+});
+
+document.getElementById("next").addEventListener("click",()=>{
+  stopAuto();
+  scrubBy(1/24);
+});
 
 function beginDrag(e){
-  dragging=true;
+  dragging = true;
   viewer.classList.add("dragging");
-  startX=e.clientX;
-  startY=e.clientY;
-  lastX=e.clientX;
-  lastTime=performance.now();
-  velocity=0;
+  startX = e.clientX;
+  lastX = e.clientX;
+  lastTime = performance.now();
+  velocity = 0;
   stopAuto();
-  autoRotate=false;
   cancelAnimationFrame(momentum);
   overlay.setPointerCapture?.(e.pointerId);
 }
 
 function moveDrag(e){
-  if(!dragging)return;
-  const now=performance.now();
-  const dx=e.clientX-lastX;
-  const dt=Math.max(1,now-lastTime);
-  velocity=dx/dt;
-  lastX=e.clientX;
-  lastTime=now;
+  if(!dragging || !duration) return;
 
-  if(Math.abs(e.clientX-startX)>3 || Math.abs(e.clientY-startY)>3){
-    const pixelsPerFrame=Math.max(5,window.innerWidth/90);
-    if(Math.abs(dx)>=1){
-      step(-Math.sign(dx)*Math.max(1,Math.round(Math.abs(dx)/pixelsPerFrame)));
-    }
+  const now = performance.now();
+  const dx = e.clientX - lastX;
+  const dt = Math.max(1, now - lastTime);
+
+  velocity = dx / dt;
+  lastX = e.clientX;
+  lastTime = now;
+
+  /*
+    Horizontal dragging controls the video timeline.
+    A full screen-width drag is approximately one complete
+    revolution through the video.
+  */
+  if(Math.abs(dx) >= 1){
+    const secondsPerPixel = duration / Math.max(350, window.innerWidth);
+    scrubBy(-dx * secondsPerPixel);
   }
 }
 
 function endDrag(){
-  if(!dragging)return;
-  dragging=false;
+  if(!dragging) return;
+
+  dragging = false;
   viewer.classList.remove("dragging");
 
-  let v=velocity*16;
+  /* Small inertial movement after release. */
+  let v = velocity * 12;
   function coast(){
-    if(Math.abs(v)<.03)return;
-    step(-Math.sign(v)*Math.max(1,Math.round(Math.abs(v))));
-    v*=.88;
-    momentum=requestAnimationFrame(coast);
+    if(Math.abs(v) < 0.05) return;
+
+    if(duration){
+      const secondsPerPixel = duration / Math.max(350, window.innerWidth);
+      scrubBy(-v * secondsPerPixel);
+    }
+
+    v *= 0.86;
+    momentum = requestAnimationFrame(coast);
   }
-  momentum=requestAnimationFrame(coast);
+
+  momentum = requestAnimationFrame(coast);
 }
 
-overlay.addEventListener("pointerdown",beginDrag);
-overlay.addEventListener("pointermove",moveDrag);
-overlay.addEventListener("pointerup",endDrag);
-overlay.addEventListener("pointercancel",endDrag);
+overlay.addEventListener("pointerdown", beginDrag);
+overlay.addEventListener("pointermove", moveDrag);
+overlay.addEventListener("pointerup", endDrag);
+overlay.addEventListener("pointercancel", endDrag);
 
 viewer.addEventListener("wheel",e=>{
   e.preventDefault();
   stopAuto();
-  autoRotate=false;
-  step(e.deltaY>0 ? 1 : -1);
+
+  if(!duration) return;
+
+  const amount = duration / 60;
+  scrubBy(e.deltaY > 0 ? amount : -amount);
 },{passive:false});
 
 viewer.addEventListener("keydown",e=>{
-  if(e.key==="ArrowLeft"){e.preventDefault();stopAuto();autoRotate=false;step(-1)}
-  if(e.key==="ArrowRight"){e.preventDefault();stopAuto();autoRotate=false;step(1)}
-  if(e.key===" "){e.preventDefault();toggleAuto()}
+  if(e.key==="ArrowLeft"){
+    e.preventDefault();
+    stopAuto();
+    scrubBy(-duration/60);
+  }
+  if(e.key==="ArrowRight"){
+    e.preventDefault();
+    stopAuto();
+    scrubBy(duration/60);
+  }
+  if(e.key===" "){
+    e.preventDefault();
+    toggleAuto();
+  }
 });
 
 document.addEventListener("visibilitychange",()=>{
-  if(document.hidden)clearInterval(timer);
-  else if(autoRotate)startAuto();
+  if(document.hidden) video.pause();
+  else if(autoRotate) video.play().catch(()=>{});
 });
 
 /* Navigation */
@@ -1028,3 +1051,22 @@ startAuto();
 
 </body>
 </html>
+oggleAuto();
+  }
+});
+
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden) video.pause();
+  else if(autoRotate) video.play().catch(()=>{});
+});
+
+/* Navigation */
+const nav=document.getElementById("nav");
+const navLinks=[...document.querySelectorAll(".navlinks a")];
+
+window.addEventListener("scroll",()=>{
+  nav.classList.toggle("scrolled",window.scrollY>20);
+
+  let current="home";
+  document.querySelectorAll("section[id]").forEach(section=>{
+    if(window.scrollY >= section.offsetT
